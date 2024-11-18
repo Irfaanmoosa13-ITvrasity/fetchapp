@@ -1,0 +1,103 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <button id="getData">Get data</button>
+        <button id="getList">Get list</button>
+        <br/><br/>
+
+        <form id="myForm">
+            <input type="text" name="firstname" id="firstname" value="Firstname" />
+            <input type="text" name="lastname" id="lastname" value="Lastname" /><br/>
+            <button id="submitForm" type="button">Submit</button>
+        </form>
+
+        <p id="posts"></p>
+        <p id="message"></p>
+        <p id="greeting"></p>
+
+        <script>
+            // Event listener for 'Get Data' button
+            document.getElementById("getData").addEventListener('click', getData);
+            document.getElementById("getList").addEventListener('click', getList);
+            document.getElementById("submitForm").addEventListener('click', submitForm);
+
+            // Fetch data from the API and display it
+            function getData() {
+                fetch('https://mysite.itvarsity.org/api/fetch/get-data/')
+                .then(function(response) {
+                    // Check if response is ok (status code 200-299)
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.text();
+                })
+                .then(function(data) {
+                    document.getElementById("message").innerHTML = data;
+                })
+                .catch(function(error) {
+                    // Handle any errors
+                    console.error('There was a problem with the fetch operation:', error);
+                    document.getElementById("message").innerHTML = 'Error fetching data';
+                });
+            }
+
+            function getList() {
+                fetch('https://mysite.itvarsity.org/api/fetch/get-list/')
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    var output = "<h1>Posts</h1>";
+                    for (var a = 0; a < data.length; a++) {
+                        output += `
+                        <ul>
+                            <li><h2>${data[a][0]}</h2></li>
+                            <li><b>${data[a][1]}</b></li>
+                            <li>${data[a][2]}</li> 
+                        </ul>
+                        `;
+                    }
+                    document.getElementById("posts").innerHTML = output;
+                })
+                .catch(function(error) {
+                    console.error('There was an issue fetching the list:', error);
+                    document.getElementById("posts").innerHTML = 'Error fetching list';
+                });
+            }
+
+            function submitForm(e) {
+                e.preventDefault();
+
+                // Get form data
+                const firstname = document.getElementById("firstname").value;
+                const lastname = document.getElementById("lastname").value;
+
+                // Create a FormData object and send it as JSON
+                const formData = new FormData(document.querySelector("#myForm"));
+                const formObject = {};
+                formData.forEach((value, key) => { formObject[key] = value; });
+
+                fetch('https://mysite.itvarsity.org/api/fetch/send-data/', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formObject)
+                })
+                .then(function(response) {
+                    return response.text(); // Correct the typo here
+                })
+                .then(function(data) {
+                    // Display the greeting message after submission
+                    document.getElementById("greeting").innerHTML = `Hello, ${firstname} ${lastname}!`;
+                })
+                .catch(function(error) {
+                    console.error('There was an issue with submitting the form:', error);
+                    document.getElementById("greeting").innerHTML = 'Error submitting form';
+                });
+            }
+        </script>
+    </body>
+</html>
